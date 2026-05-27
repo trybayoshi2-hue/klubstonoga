@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klub Turystyczny Stonoga</title>
+    
+    <link rel="icon" type="image/jpeg" href="img/logo.jpg">
+    <link rel="alternate icon" type="image/png" href="img/logo.png">
+
+    <style>
+        :root {
+            /* DOMYŚLNIE: ELEGANCKI, CIEMNY MOTYW ZIEMI */
+            --bg-body: #121613;
+            --bg-container: rgba(25, 32, 26, 0.85);
+            --primary-color: #81c784;
+            --secondary-color: #ffb74d;
+            --text-color: #f5f5f5;
+            --border-color: rgba(129, 199, 132, 0.2);
+            --box-shadow: rgba(0, 0, 0, 0.4);
+            --focus-outline: #64b5f6;
+            --logo-filter: brightness(0.9) contrast(1.1);
+            --font-scale: 1;
+        }
+
+        /* Opcjonalny tryb jasny (ustawiany przez panel) */
+        body.contrast-light {
+            --bg-body: #f5f3ef;
+            --bg-container: rgba(255, 255, 255, 0.85);
+            --primary-color: #1b5e20;
+            --secondary-color: #e65100;
+            --text-color: #1a251c;
+            --border-color: rgba(27, 94, 32, 0.15);
+            --box-shadow: rgba(27, 94, 32, 0.08);
+            --focus-outline: #0288d1;
+            --logo-filter: none;
+        }
+
+        /* Opcjonalny tryb wysoki kontrast (WCAG) */
+        body.contrast-high {
+            --bg-body: #000000;
+            --bg-container: #000000;
+            --primary-color: #ffff00;
+            --secondary-color: #ffff00;
+            --text-color: #ffff00;
+            --border-color: #ffff00;
+            --box-shadow: none;
+            --focus-outline: #ffffff;
+            --logo-filter: grayscale(1) invert(1) brightness(2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* NOWE: dynamicznie animowane tło kroczące */
+        .bg-tracks-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .track-line {
+            position: absolute;
+            width: 120px;
+            height: 200%; /* Dłuższy kontener, aby ruch był płynny */
+            top: -50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        /* Rozmieszczenie dwóch ścieżek po lewej i prawej stronie ekranu */
+        .track-line-left { left: 8%; }
+        .track-line-right { right: 8%; }
+
+        .boot-track {
+            width: 30px;
+            height: 70px;
+            fill: var(--primary-color);
+            opacity: 0.15;
+            transition: fill 0.3s;
+        }
+
+        /* Przesunięcie lewej/prawej stopy na przemian */
+        .boot-track.left-foot { transform: translateX(-12px) rotate(5deg); }
+        .boot-track.right-foot { transform: translateX(12px) rotate(-5deg); }
+
+        /* Płynna animacja maszerowania do góry */
+        body.animations-on .track-line {
+            animation: continuousWalk 22s infinite linear;
+        }
+        
+        /* Ruch z lekkim przesunięciem czasowym dla prawej strony */
+        body.animations-on .track-line-right {
+            animation-duration: 26s;
+            animation-delay: -3s;
+        }
+
+        @keyframes continuousWalk {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(25%); } /* Pętla przesunięcia pionowego */
+        }
+
+        body.contrast-high .boot-track { display: none; }
+
+        /* SKIPLNK i UŁATWIENIA DOSTĘPNOŚCI */
+        .skip-link, .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+        .skip-link:focus {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: auto;
+            height: auto;
+            padding: 14px 28px;
+            background: var(--secondary-color);
+            color: #000;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            z-index: 200;
+            outline: 3px solid var(--focus-outline);
+        }
+
+        /* PRZYCISK OPCJI */
+        .settings-toggle-btn {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            background: var(--bg-container);
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 54px;
+            height: 54px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 20px var(--box-shadow);
+            z-index: 150;
+            backdrop-filter: blur(8px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .settings-toggle-btn:hover, .settings-toggle-btn:focus {
+            outline: 3px solid var(--focus-outline);
+            transform: rotate(60deg);
+        }
+        .settings-toggle-btn svg {
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+        }
+
+        /* PANEL KONTROLI */
+        .accessibility-panel {
+            display: none;
+            background: var(--bg-container);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 650px;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 15px 35px var(--box-shadow);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            animation: slideDown 0.3s ease forwards;
+        }
+        .accessibility-panel.active {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .panel-label {
+            font-size: calc(14px * var(--font-scale));
+            font-weight: 700;
+        }
+
+        .a11y-btn {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .a11y-btn:hover, .a11y-btn:focus {
+            outline: 3px solid var(--focus-outline);
+            background: var(--primary-color);
+            color: #121613;
+        }
+
+        .btn-contrast-default { background: #262626; color: #ffffff; }
+        .btn-contrast-light { background: #ffffff; color: #000000; }
+        .btn-contrast-high { background: #000000; color: #ffff00; border-color: #ffff00; }
+
+        /* PANEL GŁÓWNY */
+        .container {
+            max-width: 650px;
+            width: 100%;
+            background: var(--bg-container);
+            padding: 60px 45px;
+            border-radius: 28px;
+            box-shadow: 0 20px 50px var(--box-shadow);
+            border: 2px solid var(--border-color);
+            text-align: center;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 5;
+        }
+
+        .logo-wrapper {
+            max-width: 210px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            margin: 0 auto 35px;
+            background: transparent;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            padding: 4px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+            filter: var(--logo-filter);
+            transition: filter 0.3s ease, transform 0.3s ease;
+        }
+
+        .container:hover .logo-img {
+            transform: scale(1.04);
+        }
+
+        h1 {
+            font-size: calc(34px * var(--font-scale));
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        p {
+            font-size: calc(18px * var(--font-scale));
+            line-height: 1.65;
+            color: var(--text-color);
+            margin-bottom: 40px;
+        }
+
+        /* ODNICZANIE CZASU */
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .countdown-item {
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(5px);
+            padding: 22px 15px;
+            border-radius: 18px;
+            min-width: 110px;
+            border: 2px solid var(--border-color);
+        }
+        body.contrast-light .countdown-item { background: rgba(255, 255, 255, 0.4); }
+
+        .countdown-time {
+            display: block;
+            font-size: calc(40px * var(--font-scale));
+            font-weight: 800;
+            color: var(--secondary-color);
+            line-height: 1;
+        }
+
+        .countdown-label {
+            font-size: calc(12px * var(--font-scale));
+            text-transform: uppercase;
+            color: var(--text-color);
+            font-weight: 700;
+            margin-top: 10px;
+            display: block;
+            opacity: 0.7;
+        }
+
+        .footer {
+            font-size: calc(14px * var(--font-scale));
+            border-top: 2px solid var(--border-color);
+            padding-top: 30px;
+            opacity: 0.7;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body.animations-on .track-line { animation: none !important; }
+        }
+    </style>
+</head>
+<body class="animations-on">
+
+    <a href="#main-content" class="skip-link">Przejdź do treści głównej</a>
+
+    <div class="bg-tracks-container" id="tracks-bg">
+        <div class="track-line track-line-left">
+            <svg class="boot-track left-foot" viewBox="0 0 30 70"><path d="M5,10 C5,5 25,5 25,10 L23,35 C20,38 10,38 7,35 Z M8,42 C12,40 18,40 22,42 L24,62 C24,68 6,68 6,62 Z"/></svg>
+            <svg class="boot-track right-foot" viewBox="0 0 30 70"><path d="M5,10 C5,5 25,5 25,10 L23,35 C20,38 10,38 7,35 Z M8,42 C12,40 18,40 22,42 L24,62 C24,68 6,68 6,62 Z"/></svg>
+            <svg class="boot-track left-foot" viewBox="0 0 30 70"><path d="M5,10 C5,5 25,5 25,10 L23,35 C20,38 10,38 7,35 Z M8,42 C12,40 18,40 22,42 L24,62 C24,68 6,68 6,62 Z"/></svg>
+            <svg class="boot-track right-foot" viewBox="0 0 30 70"><path d="M5,10 C5,5 25,5 25,10 L23,35 C20,38 10,38 7,35 Z M8,42 C12,40 18,40 22,42 L24,62 C24,68 6,68 6,62 Z"/></svg>
+        </div>
+        <div class="track-line track-line-right">
+            <svg class="boot-track left-foot" viewBox="0 0 30 70"><path d="M5,10 C5,5 25,5 25,10 L23,35 C20,38 10,38 7,35 Z M8,42 C12,40 18,40 22,42 L24,62 C24,68 6,68 6,62 Z"/></svg>
+            <svg class="boot-track right-foot" viewBox="0 0 30 70"><path d="M5,10 C5,5 25,5 25,10 L23,35 C20,38 10,38 7,35 Z M8,42 C12,40 18,40 22,42 L24,62 C24,68 6,68 6,62 Z"/></svg>
+            <svg class="boot-track left-foot" viewBox="0 0 30 70"><path d="M5,10 C5,5 25,5 25,10 L23,35 C20,38 10,38 7,35 Z M8,42 C12,40 18,40 22,42 L24,62 C24,68 6,68 6,62 Z"/></svg>
+            <svg class="boot-track right-foot" viewBox="0 0 30 70"><path d="M5,10 C5,5 25,5 25,10 L23,35 C20,38 10,38 7,35 Z M8,42 C12,40 18,40 22,42 L24,62 C24,68 6,68 6,62 Z"/></svg>
+        </div>
+    </div>
+
+    <button class="settings-toggle-btn" id="panel-toggle" onclick="toggleA11yPanel()" aria-expanded="false" aria-controls="a11y-panel" title="Otwórz ustawienia tła i motywu">
+        <svg viewBox="0 0 24 24">
+            <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l-.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+        </svg>
+    </button>
+
+    <section class="accessibility-panel" id="a11y-panel" aria-label="Ułatwienia dostępu">
+        <div class="panel-group">
+            <span class="panel-label" id="contrast-label">Motyw wizualny:</span>
+            <button class="a11y-btn btn-contrast-default" onclick="setContrast('default')" aria-labelledby="contrast-label">Ciemny (Domyślny)</button>
+            <button class="a11y-btn btn-contrast-light" onclick="setContrast('light')" aria-labelledby="contrast-label">Jasny</button>
+            <button class="a11y-btn btn-contrast-high" onclick="setContrast('high')" aria-labelledby="contrast-label">Kontrast WCAG</button>
+        </div>
+
+        <div class="panel-group">
+            <span class="panel-label" id="size-label">Rozmiar tekstu:</span>
+            <button class="a11y-btn" onclick="changeFontSize(0.85)" aria-labelledby="size-label">A-</button>
+            <button class="a11y-btn" onclick="changeFontSize(1.0)" aria-labelledby="size-label">Standard</button>
+            <button class="a11y-btn" onclick="changeFontSize(1.2)" aria-labelledby="size-label">A+</button>
+        </div>
+
+        <div class="panel-group">
+            <span class="panel-label" id="motion-label">Tło kroczące:</span>
+            <button class="a11y-btn" id="motion-btn" onclick="toggleAnimations()" aria-labelledby="motion-label">Zatrzymaj animację</button>
+        </div>
+    </section>
+
+    <main class="container" id="main-content">
+        
+        <div class="logo-wrapper">
+            <img src="img/logo.jpg" 
+                 alt="Okrągłe logo Klubu Turystycznego SKTP Stonoga z pomarańczową stonogą i kompasem." 
+                 class="logo-img"
+                 onerror="this.onerror=null; this.src='img/logo.png';">
+        </div>
+
+        <h1>Przerwa techniczna</h1>
+        <p>Aktualnie ulepszamy nasz serwis, aby zapewnić Ci jeszcze lepsze wrażenia z planowania turystycznych szlaków. Wracamy już niebawem!</p>
+
+        <section aria-label="Czas pozostały do końca przerwy technicznej">
+            <div class="countdown" id="countdown-timer" aria-hidden="true">
+                <div class="countdown-item">
+                    <span class="countdown-time" id="days">00</span>
+                    <span class="countdown-label">Dni</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-time" id="hours">00</span>
+                    <span class="countdown-label">Godziny</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-time" id="minutes">00</span>
+                    <span class="countdown-label">Minuty</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-time" id="seconds">00</span>
+                    <span class="countdown-label">Sekundy</span>
+                </div>
+            </div>
+            
+            <div id="accessible-timer-text" class="sr-only" aria-live="polite">Obliczanie pozostałego czasu...</div>
+        </section>
+
+        <footer class="footer">
+            &copy; 2026 Klub Turystyczny Stonoga. Dziękujemy za cierpliwość.
+        </footer>
+    </main>
+
+    <script>
+        function toggleA11yPanel() {
+            const panel = document.getElementById("a11y-panel");
+            const btn = document.getElementById("panel-toggle");
+            const isExpanded = btn.getAttribute("aria-expanded") === "true";
+            
+            if (isExpanded) {
+                panel.classList.remove("active");
+                btn.setAttribute("aria-expanded", "false");
+            } else {
+                panel.classList.add("active");
+                btn.setAttribute("aria-expanded", "true");
+            }
+        }
+
+        function setContrast(mode) {
+            document.body.classList.remove('contrast-light', 'contrast-high');
+            if (mode === 'light') {
+                document.body.classList.add('contrast-light');
+            } else if (mode === 'high') {
+                document.body.classList.add('contrast-high');
+            }
+        }
+
+        function changeFontSize(scale) {
+            document.documentElement.style.setProperty('--font-scale', scale);
+        }
+
+        function toggleAnimations() {
+            const body = document.body;
+            const btn = document.getElementById("motion-btn");
+            if (body.classList.contains("animations-on")) {
+                body.classList.remove("animations-on");
+                btn.innerText = "Uruchom animację";
+            } else {
+                body.classList.add("animations-on");
+                btn.innerText = "Zatrzymaj animację";
+            }
+        }
+
+        const countdownDate = new Date("June 24, 2026 23:59:59").getTime();
+        let lastAnnouncedMinutes = -1;
+
+        const updateCountdown = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = countdownDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = days < 10 ? "0" + days : days;
+            document.getElementById("hours").innerText = hours < 10 ? "0" + hours : hours;
+            document.getElementById("minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
+            document.getElementById("seconds").innerText = seconds < 10 ? "0" + seconds : seconds;
+
+            if (minutes !== lastAnnouncedMinutes && distance > 0) {
+                const accessibleText = `Pozostały czas do zakończenia przerwy: ${days} dni, ${hours} godzin i ${minutes} minut.`;
+                document.getElementById("accessible-timer-text").innerText = accessibleText;
+                lastAnnouncedMinutes = minutes;
+            }
+
+            if (distance < 0) {
+                clearInterval(updateCountdown);
+                const endMessage = "Przerwa techniczna dobiegła końca! Serwis jest już dostępny.";
+                document.getElementById("countdown-timer").innerHTML = `<p style="color: var(--primary-color); font-weight: bold; font-size: 22px;">${endMessage}</p>`;
+                document.getElementById("accessible-timer-text").innerText = endMessage;
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
