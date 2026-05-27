@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Klub Turystyczny Stonoga</title>
     
+    <!-- Miniaturka logo w pasku przeglądarki (bez folderu img/) -->
     <link rel="icon" type="image/jpeg" href="logo.jpg">
-    <link rel="alternate icon" type="image/png" href="img/logo.png">
+    <link rel="alternate icon" type="image/png" href="logo.png">
 
     <style>
         :root {
@@ -70,7 +71,7 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* NOWE: dynamicznie animowane tło kroczące */
+        /* Dynamicznie animowane tło kroczące */
         .bg-tracks-container {
             position: absolute;
             top: 0;
@@ -85,7 +86,7 @@
         .track-line {
             position: absolute;
             width: 120px;
-            height: 200%; /* Dłuższy kontener, aby ruch był płynny */
+            height: 200%; 
             top: -50%;
             display: flex;
             flex-direction: column;
@@ -122,7 +123,7 @@
 
         @keyframes continuousWalk {
             0% { transform: translateY(0); }
-            100% { transform: translateY(25%); } /* Pętla przesunięcia pionowego */
+            100% { transform: translateY(25%); } 
         }
 
         body.contrast-high .boot-track { display: none; }
@@ -401,10 +402,11 @@
     <main class="container" id="main-content">
         
         <div class="logo-wrapper">
+            <!-- Zmiana: src usunięte odwołanie do podfolderu img/ -->
             <img src="logo.jpg" 
                  alt="Okrągłe logo Klubu Turystycznego SKTP Stonoga z pomarańczową stonogą i kompasem." 
                  class="logo-img"
-                 onerror="this.onerror=null; this.src='img/logo.png';">
+                 onerror="this.onerror=null; this.src='logo.png';">
         </div>
 
         <h1>Przerwa techniczna</h1>
